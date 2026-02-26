@@ -1,0 +1,12 @@
+{
+  "ts": "2026-02-26T02:53:08.869Z",
+  "ok": false,
+  "checks": {
+    "internet": true,
+    "ax1800_lan": false,
+    "public_ip": "130.25.103.177"
+  },
+  "notes": [
+    "AX1800 non raggiungibile a 192.168.1.10"
+  ]
+}

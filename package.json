@@ -1,0 +1,18 @@
+{
+  "name": "home-status",
+  "version": "1.0.0",
+  "description": "Home network monitor — pushes status to GitHub Pages",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "check": "node dist/check.js",
+    "check:push": "node dist/check.js && node dist/push.js",
+    "dev": "ts-node src/check.ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.11.0",
+    "ts-node": "^10.9.2"
+  }
+}
