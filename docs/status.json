@@ -1,14 +1,14 @@
 {
-  "ts": "2026-02-26T13:06:47.946Z",
+  "ts": "2026-02-26T13:08:00.713Z",
   "ok": false,
   "checks": {
     "internet": {
       "up": true,
-      "latency_ms": 35
+      "latency_ms": 34
     },
     "dns": {
       "up": true,
-      "latency_ms": 7
+      "latency_ms": 1
     },
     "ax1800_lan": {
       "up": false
@@ -34,8 +34,8 @@
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-02-26T12:43:47.832Z",
-    "total_checks": 18
+    "last_down": "2026-02-26T13:06:47.946Z",
+    "total_checks": 19
   },
   "notes": [
     "AX1800 non raggiungibile a 192.168.1.10",
