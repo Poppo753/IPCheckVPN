@@ -29,7 +29,7 @@ $action = New-ScheduledTaskAction `
 # Trigger: ogni 5 minuti, indefinitamente
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) `
     -RepetitionInterval (New-TimeSpan -Minutes 5) `
-    -RepetitionDuration ([TimeSpan]::MaxValue)
+    -RepetitionDuration (New-TimeSpan -Days 9999)
 
 # Impostazioni
 $settings = New-ScheduledTaskSettingsSet `
