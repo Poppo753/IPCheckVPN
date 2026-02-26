@@ -1,14 +1,13 @@
 {
-  "ts": "2026-02-26T15:13:40.977Z",
+  "ts": "2026-02-26T15:19:03.996Z",
   "ok": false,
   "checks": {
     "internet": {
       "up": true,
-      "latency_ms": 33
+      "latency_ms": 28
     },
     "dns": {
-      "up": true,
-      "latency_ms": 8
+      "up": false
     },
     "ax1800_lan": {
       "up": false
@@ -23,22 +22,23 @@
     "network_interface": {
       "name": "Wi-Fi",
       "type": "WiFi",
-      "speed_mbps": 1100
+      "speed_mbps": 300
     },
     "vpn_adapter": {
       "name": "NordLynx",
       "description": "NordLynx Tunnel"
     },
-    "public_ip": "130.25.103.177",
     "ip_changed": false
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-02-26T15:08:41.299Z",
+    "last_down": "2026-02-26T15:13:40.977Z",
     "total_checks": 21
   },
   "notes": [
+    "DNS non risponde — risoluzione nomi KO",
     "AX1800 non raggiungibile a 192.168.1.10",
-    "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
+    "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete",
+    "Impossibile ottenere l'IP pubblico"
   ]
 }
