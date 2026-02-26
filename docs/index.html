@@ -127,6 +127,50 @@
       }
       .dot:hover .tooltip { display: block; }
 
+      /* Sparkline */
+      .sparkline { display: flex; align-items: flex-end; gap: 2px; height: 36px; margin-top: 8px; }
+      .sparkline .bar {
+        flex: 1;
+        min-width: 4px;
+        border-radius: 2px 2px 0 0;
+        position: relative;
+        cursor: default;
+      }
+      .sparkline .bar:hover .tooltip { display: block; }
+      .sparkline .bar.ok  { background: var(--green); opacity: .6; }
+      .sparkline .bar.ko  { background: var(--red); }
+      .sparkline .bar:hover { opacity: 1; }
+      .spark-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+      /* Meta stats */
+      .meta-row { display: flex; gap: 8px; margin-bottom: 12px; }
+      .meta-box {
+        flex: 1;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+      }
+      .meta-box .big { font-size: 22px; font-weight: 700; }
+      .meta-box .big.ok { color: var(--green); }
+      .meta-box .big.ko { color: var(--red); }
+      .meta-box .big.warn { color: var(--yellow); }
+      .meta-box .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+      /* NIC badge */
+      .nic-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 6px;
+        background: rgba(88,166,255,.1);
+        color: var(--accent);
+        font-weight: 500;
+      }
+
       .footer {
         text-align: center;
         font-size: 12px;
@@ -193,11 +237,38 @@
         setFavicon(allOk ? "🟢" : "🔴");
         document.title = `${allOk ? "✅" : "❌"} Home Status`;
 
+        // Meta boxes
+        const meta = s.meta || {};
+        const uptimeCls = (meta.uptime_pct || 0) >= 90 ? 'ok' : (meta.uptime_pct || 0) >= 50 ? 'warn' : 'ko';
+        const lastDownStr = meta.last_down ? ago(meta.last_down) : 'mai';
+
+        // Network interface
+        const nic = s.checks.network_interface;
+        const nicHtml = nic
+          ? `<span class="nic-badge">${nic.type === 'WiFi' ? '📶' : '🔌'} ${nic.name}${nic.speed_mbps ? ' · ' + nic.speed_mbps + ' Mbps' : ''}</span>`
+          : '<span class="val" style="color:var(--muted)">—</span>';
+
         let html = `
           <div class="banner ${cls}">
             <span class="icon">${emoji}</span>
             ${label}
           </div>
+
+          <div class="meta-row">
+            <div class="meta-box">
+              <div class="big ${uptimeCls}">${meta.uptime_pct ?? '—'}%</div>
+              <div class="sub">Uptime</div>
+            </div>
+            <div class="meta-box">
+              <div class="big" style="color:var(--text)">${meta.total_checks ?? '—'}</div>
+              <div class="sub">Check totali</div>
+            </div>
+            <div class="meta-box">
+              <div class="big" style="font-size:16px;color:${lastDownStr === 'mai' ? 'var(--green)' : 'var(--red)'}">${lastDownStr}</div>
+              <div class="sub">Ultimo KO</div>
+            </div>
+          </div>
+
           <div class="card">
             <h2>Stato attuale</h2>
             <div class="row">
@@ -230,6 +301,10 @@
               </span>
             </div>
             <div class="row">
+              <span class="label">Interfaccia</span>
+              ${nicHtml}
+            </div>
+            <div class="row">
               <span class="label">IP pubblico</span>
               <span class="val">
                 ${s.checks.public_ip || '—'}
@@ -247,8 +322,24 @@
         }
         html += `</div>`;
 
-        // History timeline
+        // Latency sparkline + history timeline
         if (history && history.entries && history.entries.length > 1) {
+          const entries = [...history.entries].reverse(); // cronologico
+          const latencies = entries.map(e => e.checks?.internet?.latency_ms ?? 0);
+          const maxMs = Math.max(...latencies, 1);
+
+          const bars = entries.map((e, i) => {
+            const ms = e.checks?.internet?.latency_ms;
+            const h = ms != null ? Math.max((ms / maxMs) * 100, 8) : 8;
+            const d = new Date(e.ts);
+            const time = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+            return `<div class="bar ${e.ok ? 'ok' : 'ko'}" style="height:${h}%"><div class="tooltip">${time} — ${ms != null ? ms + 'ms' : 'n/d'} ${e.ok ? '✅' : '❌'}</div></div>`;
+          }).join("");
+
+          const firstTime = new Date(entries[0].ts).toLocaleTimeString("it-IT", {hour:"2-digit",minute:"2-digit"});
+          const lastTime = new Date(entries[entries.length-1].ts).toLocaleTimeString("it-IT", {hour:"2-digit",minute:"2-digit"});
+
+          // Status dots
           const dots = history.entries.map(e => {
             const d = new Date(e.ts);
             const time = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
@@ -256,7 +347,16 @@
             return `<div class="dot ${e.ok ? 'ok' : 'ko'}"><div class="tooltip">${date} ${time} — ${e.ok ? 'OK' : 'KO'}</div></div>`;
           }).join("");
 
-          html += `<div class="card"><h2>Ultime ${history.entries.length} rilevazioni</h2><div class="history">${dots}</div></div>`;
+          html += `
+            <div class="card">
+              <h2>Latenza Internet (ultime ${entries.length})</h2>
+              <div class="sparkline">${bars}</div>
+              <div class="spark-label"><span>${firstTime}</span><span>${lastTime}</span></div>
+            </div>
+            <div class="card">
+              <h2>Stato rilevazioni</h2>
+              <div class="history">${dots}</div>
+            </div>`;
         }
 
         html += `
