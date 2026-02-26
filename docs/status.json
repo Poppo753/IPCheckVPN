@@ -1,18 +1,18 @@
 {
-  "ts": "2026-02-26T03:28:42.391Z",
+  "ts": "2026-02-26T03:33:42.416Z",
   "ok": false,
   "checks": {
     "internet": {
       "up": true,
-      "latency_ms": 35
+      "latency_ms": 41
     },
     "dns": {
       "up": true,
-      "latency_ms": 4
+      "latency_ms": 8
     },
     "ax1800_lan": {
       "up": true,
-      "latency_ms": 1268
+      "latency_ms": 1250
     },
     "vpn_tunnel": {
       "up": false
@@ -35,8 +35,8 @@
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-02-26T03:23:39.845Z",
-    "total_checks": 8
+    "last_down": "2026-02-26T03:28:42.391Z",
+    "total_checks": 9
   },
   "notes": [
     "Porta VPN 51820/tcp non risponde (normale se WireGuard UDP)",
