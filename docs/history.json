@@ -1,6 +1,48 @@
 {
   "entries": [
     {
+      "ts": "2026-02-26T15:48:42.891Z",
+      "ok": false,
+      "checks": {
+        "internet": {
+          "up": false
+        },
+        "dns": {
+          "up": false
+        },
+        "ax1800_lan": {
+          "up": false
+        },
+        "vpn_tunnel": {
+          "up": false
+        },
+        "gateway": {
+          "ip": "192.168.8.1",
+          "is_vpn_router": false
+        },
+        "network_interface": {
+          "name": "Wi-Fi",
+          "type": "WiFi",
+          "speed_mbps": 300
+        },
+        "vpn_adapter": {
+          "name": "NordLynx",
+          "description": "NordLynx Tunnel"
+        },
+        "ip_changed": false
+      },
+      "meta": {
+        "uptime_pct": 0,
+        "last_down": "2026-02-26T15:43:42.601Z",
+        "total_checks": 21
+      },
+      "notes": [
+        "No ping a 1.1.1.1 — internet down?",
+        "AX1800 non raggiungibile a 192.168.1.10",
+        "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
+      ]
+    },
+    {
       "ts": "2026-02-26T15:43:42.601Z",
       "ok": false,
       "checks": {
@@ -817,48 +859,6 @@
       "meta": {
         "uptime_pct": 0,
         "last_down": "2026-02-26T14:08:45.925Z",
-        "total_checks": 21
-      },
-      "notes": [
-        "No ping a 1.1.1.1 — internet down?",
-        "AX1800 non raggiungibile a 192.168.1.10",
-        "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
-      ]
-    },
-    {
-      "ts": "2026-02-26T14:08:45.925Z",
-      "ok": false,
-      "checks": {
-        "internet": {
-          "up": false
-        },
-        "dns": {
-          "up": false
-        },
-        "ax1800_lan": {
-          "up": false
-        },
-        "vpn_tunnel": {
-          "up": false
-        },
-        "gateway": {
-          "ip": "192.168.8.1",
-          "is_vpn_router": false
-        },
-        "network_interface": {
-          "name": "Ethernet",
-          "type": "Ethernet",
-          "speed_mbps": 1000
-        },
-        "vpn_adapter": {
-          "name": "NordLynx",
-          "description": "NordLynx Tunnel"
-        },
-        "ip_changed": false
-      },
-      "meta": {
-        "uptime_pct": 0,
-        "last_down": "2026-02-26T14:03:43.752Z",
         "total_checks": 21
       },
       "notes": [
