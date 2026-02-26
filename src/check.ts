@@ -17,6 +17,10 @@ interface StatusChecks {
   dns: CheckResult;
   ax1800_lan: CheckResult;
   vpn_tunnel: CheckResult;
+  gateway: {
+    ip: string;                // IP del default gateway rilevato
+    is_vpn_router: boolean;    // true se il gateway è l'AX1800 (= traffico via VPN)
+  };
   public_ip?: string;
   ip_changed?: boolean;        // true se l'IP è diverso dal check precedente
 }
@@ -81,6 +85,22 @@ function checkPort(host: string, port: number, timeoutMs = 3000): Promise<CheckR
     sock.once("error",   () => { sock.destroy(); resolve({ up: false }); });
     sock.connect(port, host);
   });
+}
+
+/** Leggi il default gateway da Windows (route print / ipconfig). */
+function getDefaultGateway(): string | undefined {
+  try {
+    // PowerShell one-liner: prende il NextHop della route 0.0.0.0/0 più specifica
+    const raw = execSync(
+      'powershell -NoProfile -Command "(Get-NetRoute -DestinationPrefix 0.0.0.0/0 | Sort-Object RouteMetric | Select-Object -First 1).NextHop"',
+      { encoding: "utf-8", timeout: 5000 }
+    );
+    const ip = raw.trim();
+    // Validazione minima: deve sembrare un IPv4
+    return /^\d+\.\d+\.\d+\.\d+$/.test(ip) ? ip : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /** Fetch public IP via ipify (returns undefined on failure). */
@@ -163,7 +183,25 @@ async function main(): Promise<void> {
     notes.push("Tunnel VPN non verificato — imposta VPN_INTERFACE_IP per check preciso");
   }
 
-  // 5. IP pubblico + change detection
+  // 5. Default gateway — stai uscendo dall'AX1800 o dalla Vodafone Station?
+  const gatewayIP = getDefaultGateway();
+  const vodafoneGW = process.env.VODAFONE_GW || "192.168.1.1";
+  const is_vpn_router = !!(gatewayIP && gatewayIP === ax1800IP);
+  const gateway = {
+    ip: gatewayIP || "sconosciuto",
+    is_vpn_router,
+  };
+  if (!gatewayIP) {
+    notes.push("Impossibile rilevare il default gateway");
+  } else if (gatewayIP === vodafoneGW) {
+    notes.push(`Gateway = ${gatewayIP} (Vodafone Station) — NON stai passando dalla VPN!`);
+  } else if (gatewayIP === ax1800IP) {
+    // perfetto, traffico via AX1800
+  } else {
+    notes.push(`Gateway = ${gatewayIP} — non è né Vodafone né AX1800, controlla la rete`);
+  }
+
+  // 6. IP pubblico + change detection
   const public_ip = internet.up ? await getPublicIP() : undefined;
   if (internet.up && !public_ip) notes.push("Impossibile ottenere l'IP pubblico");
 
@@ -171,8 +209,8 @@ async function main(): Promise<void> {
   const ip_changed = !!(public_ip && previousIP && public_ip !== previousIP);
   if (ip_changed) notes.push(`IP pubblico cambiato: ${previousIP} → ${public_ip}`);
 
-  // 6. Risultato finale
-  const ok = internet.up && ax1800_lan.up && vpn_tunnel.up;
+  // 7. Risultato finale
+  const ok = internet.up && ax1800_lan.up && is_vpn_router;
 
   const status: Status = {
     ts: new Date().toISOString(),
@@ -182,6 +220,7 @@ async function main(): Promise<void> {
       dns: dnsCheck,
       ax1800_lan,
       vpn_tunnel,
+      gateway,
       public_ip,
       ip_changed,
     },
@@ -202,6 +241,7 @@ async function main(): Promise<void> {
   console.log(`[${status.ts}] status.json → ${ok ? "OK ✅" : "KO ❌"}`);
   if (internet.latency_ms) console.log(`  Internet: ${internet.latency_ms}ms`);
   if (ax1800_lan.latency_ms) console.log(`  AX1800:   ${ax1800_lan.latency_ms}ms`);
+  console.log(`  Gateway:  ${gateway.ip} ${is_vpn_router ? '(AX1800 ✅)' : '(⚠ NON VPN)'}`);
   if (ip_changed) console.log(`  ⚠ IP cambiato: ${previousIP} → ${public_ip}`);
   if (notes.length) console.log("  Note:", notes.join("; "));
 }

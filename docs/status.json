@@ -1,27 +1,30 @@
 {
-  "ts": "2026-02-26T03:03:08.019Z",
+  "ts": "2026-02-26T03:05:16.654Z",
   "ok": false,
   "checks": {
     "internet": {
       "up": true,
-      "latency_ms": 121
+      "latency_ms": 35
     },
     "dns": {
       "up": true,
-      "latency_ms": 7
+      "latency_ms": 8
     },
     "ax1800_lan": {
-      "up": true,
-      "latency_ms": 1518
+      "up": false
     },
     "vpn_tunnel": {
       "up": false
     },
+    "gateway": {
+      "ip": "192.168.1.1",
+      "is_vpn_router": false
+    },
+    "public_ip": "130.25.103.177",
     "ip_changed": false
   },
   "notes": [
-    "Porta VPN 51820/tcp non risponde (normale se WireGuard UDP)",
-    "Tunnel VPN non verificato — imposta VPN_INTERFACE_IP per check preciso",
-    "Impossibile ottenere l'IP pubblico"
+    "AX1800 non raggiungibile a 192.168.1.10",
+    "Gateway = 192.168.1.1 (Vodafone Station) — NON stai passando dalla VPN!"
   ]
 }

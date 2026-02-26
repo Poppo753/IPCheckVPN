@@ -221,6 +221,15 @@
               ${checkVal(s.checks.vpn_tunnel)}
             </div>
             <div class="row">
+              <span class="label">Gateway</span>
+              <span class="val ${s.checks.gateway && s.checks.gateway.is_vpn_router ? 'ok' : 'ko'}">
+                ${s.checks.gateway ? s.checks.gateway.ip : '—'}
+                ${s.checks.gateway && s.checks.gateway.is_vpn_router
+                  ? '<span class="ms">via AX1800</span>'
+                  : '<span class="ip-badge" style="background:rgba(248,81,73,.2);color:var(--red)">NON VPN</span>'}
+              </span>
+            </div>
+            <div class="row">
               <span class="label">IP pubblico</span>
               <span class="val">
                 ${s.checks.public_ip || '—'}
