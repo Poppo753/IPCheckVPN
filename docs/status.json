@@ -1,18 +1,18 @@
 {
-  "ts": "2026-02-26T03:43:42.417Z",
+  "ts": "2026-02-26T03:48:42.477Z",
   "ok": false,
   "checks": {
     "internet": {
       "up": true,
-      "latency_ms": 35
+      "latency_ms": 31
     },
     "dns": {
       "up": true,
-      "latency_ms": 13
+      "latency_ms": 6
     },
     "ax1800_lan": {
       "up": true,
-      "latency_ms": 1213
+      "latency_ms": 1076
     },
     "vpn_tunnel": {
       "up": false
@@ -24,7 +24,7 @@
     "network_interface": {
       "name": "Wi-Fi",
       "type": "WiFi",
-      "speed_mbps": 287
+      "speed_mbps": 271
     },
     "vpn_adapter": {
       "name": "NordLynx",
@@ -35,8 +35,8 @@
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-02-26T03:38:42.396Z",
-    "total_checks": 11
+    "last_down": "2026-02-26T03:43:42.417Z",
+    "total_checks": 12
   },
   "notes": [
     "Porta VPN 51820/tcp non risponde (normale se WireGuard UDP)",
