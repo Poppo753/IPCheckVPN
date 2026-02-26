@@ -1,14 +1,14 @@
 {
-  "ts": "2026-02-26T16:18:43.977Z",
+  "ts": "2026-02-26T16:23:43.379Z",
   "ok": false,
   "checks": {
     "internet": {
       "up": true,
-      "latency_ms": 580
+      "latency_ms": 349
     },
     "dns": {
       "up": true,
-      "latency_ms": 326
+      "latency_ms": 318
     },
     "ax1800_lan": {
       "up": false
@@ -23,7 +23,7 @@
     "network_interface": {
       "name": "Wi-Fi",
       "type": "WiFi",
-      "speed_mbps": 270
+      "speed_mbps": 300
     },
     "vpn_adapter": {
       "name": "NordLynx",
@@ -34,7 +34,7 @@
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-02-26T16:13:43.962Z",
+    "last_down": "2026-02-26T16:18:43.977Z",
     "total_checks": 21
   },
   "notes": [
