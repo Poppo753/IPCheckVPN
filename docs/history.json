@@ -1,6 +1,50 @@
 {
   "entries": [
     {
+      "ts": "2026-02-26T16:48:40.917Z",
+      "ok": false,
+      "checks": {
+        "internet": {
+          "up": true,
+          "latency_ms": 34
+        },
+        "dns": {
+          "up": true,
+          "latency_ms": 13
+        },
+        "ax1800_lan": {
+          "up": false
+        },
+        "vpn_tunnel": {
+          "up": false
+        },
+        "gateway": {
+          "ip": "192.168.8.1",
+          "is_vpn_router": false
+        },
+        "network_interface": {
+          "name": "Ethernet",
+          "type": "Ethernet",
+          "speed_mbps": 1000
+        },
+        "vpn_adapter": {
+          "name": "NordLynx",
+          "description": "NordLynx Tunnel"
+        },
+        "public_ip": "130.25.103.177",
+        "ip_changed": false
+      },
+      "meta": {
+        "uptime_pct": 0,
+        "last_down": "2026-02-26T16:43:40.988Z",
+        "total_checks": 21
+      },
+      "notes": [
+        "AX1800 non raggiungibile a 192.168.1.10",
+        "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
+      ]
+    },
+    {
       "ts": "2026-02-26T16:43:40.988Z",
       "ok": false,
       "checks": {
@@ -827,45 +871,6 @@
       },
       "notes": [
         "AX1800 non raggiungibile a 192.168.1.10",
-        "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
-      ]
-    },
-    {
-      "ts": "2026-02-26T15:08:41.299Z",
-      "ok": false,
-      "checks": {
-        "internet": {
-          "up": false
-        },
-        "dns": {
-          "up": false
-        },
-        "ax1800_lan": {
-          "up": true,
-          "latency_ms": 496
-        },
-        "vpn_tunnel": {
-          "up": false
-        },
-        "gateway": {
-          "ip": "192.168.8.1",
-          "is_vpn_router": false
-        },
-        "vpn_adapter": {
-          "name": "NordLynx",
-          "description": "NordLynx Tunnel"
-        },
-        "ip_changed": false
-      },
-      "meta": {
-        "uptime_pct": 0,
-        "last_down": "2026-02-26T15:03:41.171Z",
-        "total_checks": 21
-      },
-      "notes": [
-        "No ping a 1.1.1.1 — internet down?",
-        "Porta VPN 51820/tcp non risponde (normale se WireGuard UDP)",
-        "Tunnel VPN non verificato — imposta VPN_INTERFACE_IP per check preciso",
         "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
       ]
     }
