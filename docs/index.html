@@ -180,6 +180,61 @@
       .footer a { color: var(--accent); text-decoration: none; }
       .countdown { color: var(--accent); }
 
+      /* VPN verification card */
+      .vpn-check {
+        text-align: center;
+        padding: 16px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      .vpn-check.match {
+        background: rgba(63,185,80,.1);
+        border: 1px solid rgba(63,185,80,.3);
+        color: var(--green);
+      }
+      .vpn-check.mismatch {
+        background: rgba(248,81,73,.1);
+        border: 1px solid rgba(248,81,73,.3);
+        color: var(--red);
+      }
+      .vpn-check.loading-state {
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--muted);
+      }
+      .vpn-check .vpn-icon { font-size: 28px; display: block; margin-bottom: 4px; }
+      .vpn-check .vpn-detail {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--muted);
+        margin-top: 6px;
+      }
+      .vpn-check .vpn-ips {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 10px;
+        font-size: 12px;
+        font-weight: 400;
+      }
+      .vpn-check .vpn-ips .ip-col {
+        text-align: center;
+      }
+      .vpn-check .vpn-ips .ip-label {
+        color: var(--muted);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 2px;
+      }
+      .vpn-check .vpn-ips .ip-val {
+        font-family: monospace;
+        font-size: 13px;
+        color: var(--text);
+      }
+
       /* Loading state */
       .loading { text-align: center; padding: 48px; color: var(--muted); }
       .loading .spinner {
@@ -253,6 +308,8 @@
             <span class="icon">${emoji}</span>
             ${label}
           </div>
+
+          ${renderVpnCheck(s.checks.public_ip)}
 
           <div class="meta-row">
             <div class="meta-box">
@@ -382,6 +439,64 @@
         if (el) el.textContent = Math.max(countdown, 0);
       }, 1000);
 
+      // Client-side VPN verification
+      let myIp = null;
+      let myIpLoading = true;
+      let myIpError = false;
+
+      async function fetchMyIp() {
+        try {
+          myIpLoading = true;
+          const res = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+          const data = await res.json();
+          myIp = data.ip;
+          myIpError = false;
+        } catch (e) {
+          myIp = null;
+          myIpError = true;
+        } finally {
+          myIpLoading = false;
+        }
+      }
+
+      function renderVpnCheck(homeIp) {
+        if (myIpLoading) {
+          return `<div class="vpn-check loading-state">
+            <span class="vpn-icon">🔍</span>
+            Verifico il tuo IP...
+          </div>`;
+        }
+        if (myIpError || !myIp) {
+          return `<div class="vpn-check loading-state">
+            <span class="vpn-icon">❓</span>
+            Impossibile verificare il tuo IP
+            <div class="vpn-detail">Controlla la connessione</div>
+          </div>`;
+        }
+        const match = homeIp && myIp === homeIp;
+        const cls = match ? 'match' : 'mismatch';
+        const icon = match ? '🏠' : '⚠️';
+        const msg = match ? 'Stai navigando come da casa' : 'IP diverso da casa';
+        const sub = match
+          ? 'Il tuo traffico esce dal VPN di casa — tutto OK'
+          : 'Non stai passando dal VPN — controlla il collegamento Opal → AX1800';
+        return `<div class="vpn-check ${cls}">
+          <span class="vpn-icon">${icon}</span>
+          ${msg}
+          <div class="vpn-detail">${sub}</div>
+          <div class="vpn-ips">
+            <div class="ip-col">
+              <div class="ip-label">Il tuo IP</div>
+              <div class="ip-val">${myIp}</div>
+            </div>
+            <div class="ip-col">
+              <div class="ip-label">IP di casa</div>
+              <div class="ip-val">${homeIp || '—'}</div>
+            </div>
+          </div>
+        </div>`;
+      }
+
       async function load() {
         try {
           const t = Date.now();
@@ -399,6 +514,10 @@
           setFavicon("⚠️");
         }
       }
+
+      // Fetch visitor's IP once on load, then every 2 minutes
+      fetchMyIp();
+      setInterval(fetchMyIp, 120_000);
 
       load();
       setInterval(load, 30_000);
