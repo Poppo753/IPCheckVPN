@@ -1,10 +1,9 @@
 {
-  "ts": "2026-02-26T14:23:44.729Z",
+  "ts": "2026-02-26T14:28:45.537Z",
   "ok": false,
   "checks": {
     "internet": {
-      "up": true,
-      "latency_ms": 35
+      "up": false
     },
     "dns": {
       "up": false
@@ -28,16 +27,15 @@
       "name": "NordLynx",
       "description": "NordLynx Tunnel"
     },
-    "public_ip": "130.25.103.177",
     "ip_changed": false
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-02-26T14:18:43.719Z",
+    "last_down": "2026-02-26T14:23:44.729Z",
     "total_checks": 21
   },
   "notes": [
-    "DNS non risponde — risoluzione nomi KO",
+    "No ping a 1.1.1.1 — internet down?",
     "AX1800 non raggiungibile a 192.168.1.10",
     "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
   ]
