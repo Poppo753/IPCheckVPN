@@ -113,23 +113,39 @@ function getDefaultGateway(): string | undefined {
   }
 }
 
-/** Rileva l'interfaccia di rete attiva (WiFi / Ethernet + velocità). */
+/** Rileva l'interfaccia di rete fisica attiva (WiFi / Ethernet), ignorando adapter virtuali VPN. */
 function getNetworkInterface(): StatusChecks["network_interface"] | undefined {
   try {
+    // Prendi TUTTI gli adapter Up
     const raw = execSync(
-      'powershell -NoProfile -Command "Get-NetAdapter | Where-Object Status -eq Up | Select-Object -First 1 Name,InterfaceDescription,LinkSpeed | ConvertTo-Json"',
+      'powershell -NoProfile -Command "Get-NetAdapter | Where-Object Status -eq Up | Select-Object Name,InterfaceDescription,LinkSpeed,Virtual | ConvertTo-Json"',
       { encoding: "utf-8", timeout: 5000 }
     );
-    const info = JSON.parse(raw.trim()) as { Name?: string; InterfaceDescription?: string; LinkSpeed?: string };
-    if (!info.Name) return undefined;
+    const parsed = JSON.parse(raw.trim());
+    // ConvertTo-Json restituisce un oggetto se c'è 1 solo risultato, array se > 1
+    const adapters: Array<{ Name?: string; InterfaceDescription?: string; LinkSpeed?: string; Virtual?: boolean }> =
+      Array.isArray(parsed) ? parsed : [parsed];
 
-    const name = info.Name;
-    const isWifi = /wi-?fi|wireless|wlan/i.test(name + " " + (info.InterfaceDescription || ""));
-    const type = isWifi ? "WiFi" : /ethernet/i.test(name) ? "Ethernet" : "Other";
+    // Nomi comuni di adapter virtuali VPN da escludere
+    const vpnAdapterPatterns = /nordlynx|wireguard|wintun|tap-?windows|openvpn|tunnelbear|proton|mullvad|surfshark|hyper-v|vmware|virtualbox|vethernet|docker|wsl/i;
+
+    // Cerca prima un adapter fisico (non virtuale, non VPN)
+    const physical = adapters.find(a =>
+      a.Name && !a.Virtual && !vpnAdapterPatterns.test(a.Name + " " + (a.InterfaceDescription || ""))
+    );
+
+    const chosen = physical || adapters[0]; // fallback al primo se non trova fisico
+    if (!chosen?.Name) return undefined;
+
+    const name = chosen.Name;
+    const desc = chosen.InterfaceDescription || "";
+    const isVirtual = !physical; // true se abbiamo dovuto usare il fallback
+    const isWifi = /wi-?fi|wireless|wlan/i.test(name + " " + desc);
+    const type = isWifi ? "WiFi" : /ethernet/i.test(name) ? "Ethernet" : isVirtual ? "Virtual" : "Other";
 
     let speed_mbps: number | undefined;
-    if (info.LinkSpeed) {
-      const m = info.LinkSpeed.match(/([\d.]+)\s*(Gbps|Mbps)/i);
+    if (chosen.LinkSpeed) {
+      const m = chosen.LinkSpeed.match(/([\d.]+)\s*(Gbps|Mbps)/i);
       if (m) {
         speed_mbps = parseFloat(m[1]) * (/gbps/i.test(m[2]) ? 1000 : 1);
       }
