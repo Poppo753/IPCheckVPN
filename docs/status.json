@@ -1,13 +1,14 @@
 {
-  "ts": "2026-02-26T14:38:44.130Z",
+  "ts": "2026-02-26T14:43:43.929Z",
   "ok": false,
   "checks": {
     "internet": {
       "up": true,
-      "latency_ms": 35
+      "latency_ms": 57
     },
     "dns": {
-      "up": false
+      "up": true,
+      "latency_ms": 45
     },
     "ax1800_lan": {
       "up": false
@@ -33,11 +34,10 @@
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-02-26T14:34:07.749Z",
+    "last_down": "2026-02-26T14:38:44.130Z",
     "total_checks": 21
   },
   "notes": [
-    "DNS non risponde — risoluzione nomi KO",
     "AX1800 non raggiungibile a 192.168.1.10",
     "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
   ]
