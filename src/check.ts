@@ -26,6 +26,10 @@ interface StatusChecks {
     type: string;              // "Ethernet" | "WiFi" | "Other"
     speed_mbps?: number;
   };
+  vpn_adapter?: {
+    name: string;              // es. "NordLynx", "WireGuard Tunnel"
+    description?: string;
+  };
   public_ip?: string;
   ip_changed?: boolean;
 }
@@ -113,8 +117,13 @@ function getDefaultGateway(): string | undefined {
   }
 }
 
+type NicResult = {
+  physical?: StatusChecks["network_interface"];
+  vpn?: StatusChecks["vpn_adapter"];
+};
+
 /** Rileva l'interfaccia di rete fisica attiva (WiFi / Ethernet), ignorando adapter virtuali VPN. */
-function getNetworkInterface(): StatusChecks["network_interface"] | undefined {
+function getNetworkInterfaces(): NicResult {
   try {
     // Prendi TUTTI gli adapter Up
     const raw = execSync(
@@ -122,38 +131,49 @@ function getNetworkInterface(): StatusChecks["network_interface"] | undefined {
       { encoding: "utf-8", timeout: 5000 }
     );
     const parsed = JSON.parse(raw.trim());
-    // ConvertTo-Json restituisce un oggetto se c'è 1 solo risultato, array se > 1
     const adapters: Array<{ Name?: string; InterfaceDescription?: string; LinkSpeed?: string; Virtual?: boolean }> =
       Array.isArray(parsed) ? parsed : [parsed];
 
-    // Nomi comuni di adapter virtuali VPN da escludere
+    // Nomi comuni di adapter virtuali VPN
     const vpnAdapterPatterns = /nordlynx|wireguard|wintun|tap-?windows|openvpn|tunnelbear|proton|mullvad|surfshark|hyper-v|vmware|virtualbox|vethernet|docker|wsl/i;
 
-    // Cerca prima un adapter fisico (non virtuale, non VPN)
-    const physical = adapters.find(a =>
+    // Adapter fisico
+    const physicalAdapter = adapters.find(a =>
       a.Name && !a.Virtual && !vpnAdapterPatterns.test(a.Name + " " + (a.InterfaceDescription || ""))
     );
 
-    const chosen = physical || adapters[0]; // fallback al primo se non trova fisico
-    if (!chosen?.Name) return undefined;
+    // Adapter VPN (il primo che matcha il pattern)
+    const vpnAdapterRaw = adapters.find(a =>
+      a.Name && vpnAdapterPatterns.test(a.Name + " " + (a.InterfaceDescription || ""))
+    );
 
-    const name = chosen.Name;
-    const desc = chosen.InterfaceDescription || "";
-    const isVirtual = !physical; // true se abbiamo dovuto usare il fallback
-    const isWifi = /wi-?fi|wireless|wlan/i.test(name + " " + desc);
-    const type = isWifi ? "WiFi" : /ethernet/i.test(name) ? "Ethernet" : isVirtual ? "Virtual" : "Other";
+    const result: NicResult = {};
 
-    let speed_mbps: number | undefined;
-    if (chosen.LinkSpeed) {
-      const m = chosen.LinkSpeed.match(/([\d.]+)\s*(Gbps|Mbps)/i);
-      if (m) {
-        speed_mbps = parseFloat(m[1]) * (/gbps/i.test(m[2]) ? 1000 : 1);
+    if (physicalAdapter?.Name) {
+      const name = physicalAdapter.Name;
+      const desc = physicalAdapter.InterfaceDescription || "";
+      const isWifi = /wi-?fi|wireless|wlan/i.test(name + " " + desc);
+      const type = isWifi ? "WiFi" : /ethernet/i.test(name) ? "Ethernet" : "Other";
+
+      let speed_mbps: number | undefined;
+      if (physicalAdapter.LinkSpeed) {
+        const m = physicalAdapter.LinkSpeed.match(/([\d.]+)\s*(Gbps|Mbps)/i);
+        if (m) speed_mbps = parseFloat(m[1]) * (/gbps/i.test(m[2]) ? 1000 : 1);
       }
+
+      result.physical = { name, type, speed_mbps };
     }
 
-    return { name, type, speed_mbps };
+    if (vpnAdapterRaw?.Name) {
+      result.vpn = {
+        name: vpnAdapterRaw.Name,
+        description: vpnAdapterRaw.InterfaceDescription || undefined,
+      };
+    }
+
+    return result;
   } catch {
-    return undefined;
+    return {};
   }
 }
 
@@ -263,8 +283,10 @@ async function main(): Promise<void> {
   const ip_changed = !!(public_ip && previousIP && public_ip !== previousIP);
   if (ip_changed) notes.push(`IP pubblico cambiato: ${previousIP} → ${public_ip}`);
 
-  // 7. Interfaccia di rete attiva
-  const network_interface = getNetworkInterface();
+  // 7. Interfaccia di rete attiva + adapter VPN
+  const nics = getNetworkInterfaces();
+  const network_interface = nics.physical;
+  const vpn_adapter = nics.vpn;
 
   // 8. Risultato finale
   const ok = internet.up && ax1800_lan.up && is_vpn_router;
@@ -290,6 +312,7 @@ async function main(): Promise<void> {
       vpn_tunnel,
       gateway,
       network_interface,
+      vpn_adapter,
       public_ip,
       ip_changed,
     },
@@ -313,6 +336,7 @@ async function main(): Promise<void> {
   if (ax1800_lan.latency_ms) console.log(`  AX1800:   ${ax1800_lan.latency_ms}ms`);
   console.log(`  Gateway:  ${gateway.ip} ${is_vpn_router ? '(AX1800 ✅)' : '(⚠ NON VPN)'}`);
   if (network_interface) console.log(`  Rete:     ${network_interface.name} (${network_interface.type}${network_interface.speed_mbps ? ', ' + network_interface.speed_mbps + ' Mbps' : ''})`);
+  if (vpn_adapter) console.log(`  VPN SW:   ${vpn_adapter.name}${vpn_adapter.description ? ' (' + vpn_adapter.description + ')' : ''}`);
   console.log(`  Uptime:   ${meta.uptime_pct}% (${meta.total_checks} check)`);
   if (ip_changed) console.log(`  ⚠ IP cambiato: ${previousIP} → ${public_ip}`);
   if (notes.length) console.log("  Note:", notes.join("; "));

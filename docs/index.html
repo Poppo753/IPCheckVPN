@@ -305,6 +305,14 @@
               ${nicHtml}
             </div>
             <div class="row">
+              <span class="label">VPN Software</span>
+              <span class="val" style="color:${s.checks.vpn_adapter ? 'var(--accent)' : 'var(--muted)'}">
+                ${s.checks.vpn_adapter
+                  ? '🛡️ ' + s.checks.vpn_adapter.name + (s.checks.vpn_adapter.description ? ' <span class="ms">' + s.checks.vpn_adapter.description + '</span>' : '')
+                  : 'Nessuno'}
+              </span>
+            </div>
+            <div class="row">
               <span class="label">IP pubblico</span>
               <span class="val">
                 ${s.checks.public_ip || '—'}
