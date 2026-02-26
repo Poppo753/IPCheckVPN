@@ -182,12 +182,51 @@
 
       /* VPN verification card */
       .vpn-check {
+        position: relative;
         text-align: center;
         padding: 16px;
         border-radius: 12px;
         margin-bottom: 12px;
         font-size: 15px;
         font-weight: 600;
+      }
+      .vpn-live-dot {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .vpn-live-dot::before {
+        content: '';
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+      .vpn-live-dot.checking::before {
+        animation: pulse-dot 1s ease-in-out infinite;
+      }
+      .vpn-live-dot.ok { color: var(--green); }
+      .vpn-live-dot.ko { color: var(--red); }
+      .vpn-live-dot.wait { color: var(--muted); }
+      @keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: .4; transform: scale(.6); }
+      }
+      .vpn-live-label {
+        position: absolute;
+        top: 12px;
+        right: 28px;
+        font-size: 9px;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        color: var(--muted);
       }
       .vpn-check.match {
         background: rgba(63,185,80,.1);
@@ -466,16 +505,25 @@
         }
       }
 
+      function liveDot() {
+        if (myIpLoading) return `<span class="vpn-live-label">check...</span><span class="vpn-live-dot wait checking"></span>`;
+        if (myIpError || !myIp) return `<span class="vpn-live-label">errore</span><span class="vpn-live-dot ko"></span>`;
+        const ok = lastHomeIp && myIp === lastHomeIp;
+        return `<span class="vpn-live-label">live</span><span class="vpn-live-dot ${ok ? 'ok' : 'ko'}"></span>`;
+      }
+
       function renderVpnCheck(homeIp) {
         lastHomeIp = homeIp; // cache for re-render after IP fetch
         if (myIpLoading) {
           return `<div class="vpn-check loading-state" id="vpn-check-card">
+            ${liveDot()}
             <span class="vpn-icon">🔍</span>
             Verifico il tuo IP...
           </div>`;
         }
         if (myIpError || !myIp) {
           return `<div class="vpn-check loading-state" id="vpn-check-card">
+            ${liveDot()}
             <span class="vpn-icon">❓</span>
             Impossibile verificare il tuo IP
             <div class="vpn-detail">Controlla la connessione</div>
@@ -489,6 +537,7 @@
           ? 'Il tuo traffico esce dal VPN di casa — tutto OK'
           : 'Non stai passando dal VPN — controlla il collegamento Opal → AX1800';
         return `<div class="vpn-check ${cls}" id="vpn-check-card">
+          ${liveDot()}
           <span class="vpn-icon">${icon}</span>
           ${msg}
           <div class="vpn-detail">${sub}</div>
@@ -523,9 +572,9 @@
         }
       }
 
-      // Fetch visitor's IP once on load, then every 2 minutes
+      // Fetch visitor's IP on load, then every 30s alongside page refresh
       fetchMyIp();
-      setInterval(fetchMyIp, 120_000);
+      setInterval(fetchMyIp, 30_000);
 
       load();
       setInterval(load, 30_000);
