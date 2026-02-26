@@ -1,0 +1,14 @@
+{
+  "ts": "2026-02-26T02:59:53.389Z",
+  "ok": false,
+  "checks": {
+    "internet": true,
+    "ax1800_lan": true,
+    "vpn_tunnel": false,
+    "public_ip": "130.25.103.177"
+  },
+  "notes": [
+    "Porta VPN 51820/tcp non risponde su 192.168.1.10 (normale se WireGuard UDP)",
+    "Tunnel VPN non verificato — imposta VPN_INTERFACE_IP per check preciso"
+  ]
+}

@@ -142,6 +142,10 @@
               <span class="val ${s.checks.ax1800_lan ? 'ok' : 'ko'}">${s.checks.ax1800_lan ? 'OK' : 'KO'}</span>
             </div>
             <div class="row">
+              <span class="label">VPN Tunnel</span>
+              <span class="val ${s.checks.vpn_tunnel ? 'ok' : 'ko'}">${s.checks.vpn_tunnel ? 'OK' : 'KO'}</span>
+            </div>
+            <div class="row">
               <span class="label">IP pubblico</span>
               <span class="val">${s.checks.public_ip || '—'}</span>
             </div>
