@@ -1,14 +1,27 @@
 {
-  "ts": "2026-02-26T02:59:53.389Z",
+  "ts": "2026-02-26T03:03:08.019Z",
   "ok": false,
   "checks": {
-    "internet": true,
-    "ax1800_lan": true,
-    "vpn_tunnel": false,
-    "public_ip": "130.25.103.177"
+    "internet": {
+      "up": true,
+      "latency_ms": 121
+    },
+    "dns": {
+      "up": true,
+      "latency_ms": 7
+    },
+    "ax1800_lan": {
+      "up": true,
+      "latency_ms": 1518
+    },
+    "vpn_tunnel": {
+      "up": false
+    },
+    "ip_changed": false
   },
   "notes": [
-    "Porta VPN 51820/tcp non risponde su 192.168.1.10 (normale se WireGuard UDP)",
-    "Tunnel VPN non verificato — imposta VPN_INTERFACE_IP per check preciso"
+    "Porta VPN 51820/tcp non risponde (normale se WireGuard UDP)",
+    "Tunnel VPN non verificato — imposta VPN_INTERFACE_IP per check preciso",
+    "Impossibile ottenere l'IP pubblico"
   ]
 }

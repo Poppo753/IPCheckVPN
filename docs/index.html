@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Home Status</title>
+    <link id="favicon" rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏳</text></svg>">
     <style>
       :root {
         --bg: #0d1117;
@@ -13,6 +14,7 @@
         --muted: #8b949e;
         --green: #3fb950;
         --red: #f85149;
+        --yellow: #d29922;
         --accent: #58a6ff;
       }
       * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -22,55 +24,108 @@
         color: var(--text);
         min-height: 100vh;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
         padding: 24px;
       }
-      .container { width: 100%; max-width: 480px; }
+      .container { width: 100%; max-width: 520px; }
 
       /* Big status banner */
       .banner {
         text-align: center;
-        padding: 32px 16px;
+        padding: 28px 16px;
         border-radius: 16px;
         margin-bottom: 16px;
-        font-size: 32px;
+        font-size: 28px;
         font-weight: 700;
         letter-spacing: -.5px;
       }
       .banner.ok  { background: rgba(63,185,80,.12); color: var(--green); }
       .banner.ko  { background: rgba(248,81,73,.12); color: var(--red);   }
-      .banner .icon { font-size: 48px; display: block; margin-bottom: 8px; }
+      .banner .icon { font-size: 44px; display: block; margin-bottom: 6px; }
 
       /* Info card */
       .card {
         background: var(--card);
         border: 1px solid var(--border);
         border-radius: 12px;
-        padding: 20px;
+        padding: 16px 20px;
         margin-bottom: 12px;
+      }
+      .card h2 {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--muted);
+        margin-bottom: 10px;
       }
       .row {
         display: flex;
         justify-content: space-between;
-        padding: 8px 0;
+        align-items: center;
+        padding: 7px 0;
         border-bottom: 1px solid var(--border);
       }
       .row:last-child { border-bottom: none; }
-      .label { color: var(--muted); }
-      .val   { font-weight: 600; }
+      .label { color: var(--muted); font-size: 14px; }
+      .val   { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 6px; }
       .val.ok { color: var(--green); }
       .val.ko { color: var(--red); }
+      .ms { font-weight: 400; font-size: 12px; color: var(--muted); }
+      .ip-badge {
+        display: inline-block;
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        background: rgba(210,153,34,.2);
+        color: var(--yellow);
+        font-weight: 600;
+        margin-left: 4px;
+      }
 
       .notes {
         margin-top: 12px;
         padding: 12px;
         background: rgba(248,81,73,.08);
         border-radius: 8px;
-        font-size: 14px;
+        font-size: 13px;
         color: var(--red);
         line-height: 1.6;
       }
+
+      /* History timeline */
+      .history {
+        display: flex;
+        gap: 3px;
+        margin-top: 4px;
+        flex-wrap: wrap;
+      }
+      .history .dot {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        position: relative;
+        cursor: default;
+      }
+      .history .dot.ok  { background: var(--green); opacity: .7; }
+      .history .dot.ko  { background: var(--red);   opacity: .85; }
+      .history .dot:hover { opacity: 1; transform: scale(1.2); }
+      .tooltip {
+        display: none;
+        position: absolute;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 11px;
+        white-space: nowrap;
+        z-index: 10;
+        color: var(--text);
+      }
+      .dot:hover .tooltip { display: block; }
 
       .footer {
         text-align: center;
@@ -79,6 +134,7 @@
         margin-top: 16px;
       }
       .footer a { color: var(--accent); text-decoration: none; }
+      .countdown { color: var(--accent); }
 
       /* Loading state */
       .loading { text-align: center; padding: 48px; color: var(--muted); }
@@ -91,8 +147,6 @@
         margin: 0 auto 12px;
       }
       @keyframes spin { to { transform: rotate(360deg); } }
-
-      /* Error state */
       .error { text-align: center; padding: 48px; color: var(--red); }
     </style>
   </head>
@@ -106,22 +160,38 @@
 
     <script>
       const app = document.getElementById("app");
+      const faviconEl = document.getElementById("favicon");
+
+      function setFavicon(emoji) {
+        faviconEl.href = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${emoji}</text></svg>`;
+      }
 
       function ago(isoStr) {
         const diff = Date.now() - new Date(isoStr).getTime();
-        const m = Math.floor(diff / 60000);
-        if (m < 1) return "adesso";
+        const s = Math.floor(diff / 1000);
+        if (s < 60) return s + "s fa";
+        const m = Math.floor(s / 60);
         if (m < 60) return m + " min fa";
         const h = Math.floor(m / 60);
-        if (h < 24) return h + " ore fa";
-        return Math.floor(h / 24) + " giorni fa";
+        if (h < 24) return h + "h fa";
+        return Math.floor(h / 24) + "g fa";
       }
 
-      function render(s) {
-        const stale = (Date.now() - new Date(s.ts).getTime()) > 10 * 60 * 1000; // >10 min
-        const emoji = s.ok && !stale ? "✅" : "❌";
-        const label = s.ok && !stale ? "Tutto OK" : stale ? "Dati vecchi" : "Problemi";
-        const cls   = s.ok && !stale ? "ok" : "ko";
+      function checkVal(c, label) {
+        const up = c.up;
+        const ms = c.latency_ms != null ? `<span class="ms">${c.latency_ms}ms</span>` : "";
+        return `<span class="val ${up ? 'ok' : 'ko'}">${up ? 'OK' : 'KO'} ${ms}</span>`;
+      }
+
+      function render(s, history) {
+        const stale = (Date.now() - new Date(s.ts).getTime()) > 10 * 60 * 1000;
+        const allOk = s.ok && !stale;
+        const emoji = allOk ? "✅" : "❌";
+        const label = allOk ? "Tutto OK" : stale ? "Dati vecchi" : "Problemi";
+        const cls   = allOk ? "ok" : "ko";
+
+        setFavicon(allOk ? "🟢" : "🔴");
+        document.title = `${allOk ? "✅" : "❌"} Home Status`;
 
         let html = `
           <div class="banner ${cls}">
@@ -129,51 +199,87 @@
             ${label}
           </div>
           <div class="card">
+            <h2>Stato attuale</h2>
             <div class="row">
               <span class="label">Ultimo check</span>
               <span class="val">${ago(s.ts)}</span>
             </div>
             <div class="row">
               <span class="label">Internet</span>
-              <span class="val ${s.checks.internet ? 'ok' : 'ko'}">${s.checks.internet ? 'OK' : 'KO'}</span>
+              ${checkVal(s.checks.internet)}
+            </div>
+            <div class="row">
+              <span class="label">DNS</span>
+              ${checkVal(s.checks.dns)}
             </div>
             <div class="row">
               <span class="label">AX1800 LAN</span>
-              <span class="val ${s.checks.ax1800_lan ? 'ok' : 'ko'}">${s.checks.ax1800_lan ? 'OK' : 'KO'}</span>
+              ${checkVal(s.checks.ax1800_lan)}
             </div>
             <div class="row">
               <span class="label">VPN Tunnel</span>
-              <span class="val ${s.checks.vpn_tunnel ? 'ok' : 'ko'}">${s.checks.vpn_tunnel ? 'OK' : 'KO'}</span>
+              ${checkVal(s.checks.vpn_tunnel)}
             </div>
             <div class="row">
               <span class="label">IP pubblico</span>
-              <span class="val">${s.checks.public_ip || '—'}</span>
+              <span class="val">
+                ${s.checks.public_ip || '—'}
+                ${s.checks.ip_changed ? '<span class="ip-badge">CAMBIATO</span>' : ''}
+              </span>
             </div>
             <div class="row">
               <span class="label">Timestamp</span>
-              <span class="val" style="font-size:13px">${new Date(s.ts).toLocaleString("it-IT")}</span>
+              <span class="val" style="font-size:12px;color:var(--muted)">${new Date(s.ts).toLocaleString("it-IT")}</span>
             </div>
         `;
 
         if (s.notes && s.notes.length) {
           html += `<div class="notes">${s.notes.map(n => "⚠ " + n).join("<br>")}</div>`;
         }
+        html += `</div>`;
 
-        html += `</div>
+        // History timeline
+        if (history && history.entries && history.entries.length > 1) {
+          const dots = history.entries.map(e => {
+            const d = new Date(e.ts);
+            const time = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+            const date = d.toLocaleDateString("it-IT", { day: "2-digit", month: "2-digit" });
+            return `<div class="dot ${e.ok ? 'ok' : 'ko'}"><div class="tooltip">${date} ${time} — ${e.ok ? 'OK' : 'KO'}</div></div>`;
+          }).join("");
+
+          html += `<div class="card"><h2>Ultime ${history.entries.length} rilevazioni</h2><div class="history">${dots}</div></div>`;
+        }
+
+        html += `
           <div class="footer">
-            Aggiornamento automatico ogni 30 s &middot; <a href="status.json">raw json</a>
+            Prossimo refresh: <span class="countdown" id="cd">30</span>s &middot; <a href="status.json">json</a> &middot; <a href="history.json">storico</a>
           </div>`;
 
         app.innerHTML = html;
       }
 
+      let countdown = 30;
+      setInterval(() => {
+        countdown--;
+        const el = document.getElementById("cd");
+        if (el) el.textContent = Math.max(countdown, 0);
+      }, 1000);
+
       async function load() {
         try {
-          const res = await fetch("status.json?t=" + Date.now(), { cache: "no-store" });
-          if (!res.ok) throw new Error(res.status);
-          render(await res.json());
+          const t = Date.now();
+          const [sRes, hRes] = await Promise.all([
+            fetch("status.json?t=" + t, { cache: "no-store" }),
+            fetch("history.json?t=" + t, { cache: "no-store" }).catch(() => null),
+          ]);
+          if (!sRes.ok) throw new Error(sRes.status);
+          const status = await sRes.json();
+          const history = hRes && hRes.ok ? await hRes.json() : null;
+          render(status, history);
+          countdown = 30;
         } catch (e) {
           app.innerHTML = `<div class="error">Impossibile caricare status.json<br><small>${e.message}</small></div>`;
+          setFavicon("⚠️");
         }
       }
 

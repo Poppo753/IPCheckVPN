@@ -1,4 +1,5 @@
 import fs from "fs";
+import dns from "dns/promises";
 import net from "net";
 import path from "path";
 import { execSync } from "child_process";
@@ -6,11 +7,18 @@ import { execSync } from "child_process";
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
+interface CheckResult {
+  up: boolean;
+  latency_ms?: number;        // tempo di risposta in ms
+}
+
 interface StatusChecks {
-  internet: boolean;
-  ax1800_lan: boolean;
-  vpn_tunnel: boolean;
+  internet: CheckResult;
+  dns: CheckResult;
+  ax1800_lan: CheckResult;
+  vpn_tunnel: CheckResult;
   public_ip?: string;
+  ip_changed?: boolean;        // true se l'IP è diverso dal check precedente
 }
 
 interface Status {
@@ -20,33 +28,57 @@ interface Status {
   notes?: string[];
 }
 
+/** Storico delle ultime N rilevazioni */
+interface HistoryFile {
+  entries: Status[];
+}
+
+const MAX_HISTORY = 20;
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Ping a host (Windows-compatible). Returns true if reachable. */
-function ping(host: string): boolean {
+/** Ping a host and return up + latency in ms (Windows). */
+function ping(host: string): CheckResult {
   try {
-    // -n 1 = one packet, -w 2000 = 2 s timeout
+    const start = performance.now();
     execSync(`ping -n 1 -w 2000 ${host}`, { stdio: "ignore" });
-    return true;
+    const latency_ms = Math.round(performance.now() - start);
+    return { up: true, latency_ms };
   } catch {
-    return false;
+    return { up: false };
+  }
+}
+
+/** DNS resolution check — resolve google.com and measure time. */
+async function checkDNS(): Promise<CheckResult> {
+  try {
+    const start = performance.now();
+    await dns.resolve4("google.com");
+    const latency_ms = Math.round(performance.now() - start);
+    return { up: true, latency_ms };
+  } catch {
+    return { up: false };
   }
 }
 
 /**
  * Check if a TCP port is open on a host (connect + immediate close).
- * Works for OpenVPN (TCP mode) and most VPN admin panels.
- * For WireGuard (UDP), we rely on ping to the VPN interface instead.
+ * Returns up + latency.
  */
-function checkPort(host: string, port: number, timeoutMs = 3000): Promise<boolean> {
+function checkPort(host: string, port: number, timeoutMs = 3000): Promise<CheckResult> {
   return new Promise((resolve) => {
+    const start = performance.now();
     const sock = new net.Socket();
     sock.setTimeout(timeoutMs);
-    sock.once("connect", () => { sock.destroy(); resolve(true); });
-    sock.once("timeout", () => { sock.destroy(); resolve(false); });
-    sock.once("error",   () => { sock.destroy(); resolve(false); });
+    sock.once("connect", () => {
+      const latency_ms = Math.round(performance.now() - start);
+      sock.destroy();
+      resolve({ up: true, latency_ms });
+    });
+    sock.once("timeout", () => { sock.destroy(); resolve({ up: false }); });
+    sock.once("error",   () => { sock.destroy(); resolve({ up: false }); });
     sock.connect(port, host);
   });
 }
@@ -68,63 +100,109 @@ async function getPublicIP(): Promise<string | undefined> {
 }
 
 // ---------------------------------------------------------------------------
+// History helpers
+// ---------------------------------------------------------------------------
+function loadHistory(filePath: string): HistoryFile {
+  try {
+    const raw = fs.readFileSync(filePath, "utf-8");
+    return JSON.parse(raw) as HistoryFile;
+  } catch {
+    return { entries: [] };
+  }
+}
+
+function saveHistory(filePath: string, history: HistoryFile): void {
+  fs.writeFileSync(filePath, JSON.stringify(history, null, 2), "utf-8");
+}
+
+function getPreviousIP(history: HistoryFile): string | undefined {
+  for (const entry of history.entries) {
+    if (entry.checks.public_ip) return entry.checks.public_ip;
+  }
+  return undefined;
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 async function main(): Promise<void> {
   const notes: string[] = [];
+  const outDir = path.join(__dirname, "..", "docs");
+  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+
+  const historyPath = path.join(outDir, "history.json");
+  const history = loadHistory(historyPath);
 
   // 1. Internet — ping Cloudflare DNS
   const internet = ping("1.1.1.1");
-  if (!internet) notes.push("No ping to 1.1.1.1 — internet down?");
+  if (!internet.up) notes.push("No ping a 1.1.1.1 — internet down?");
 
-  // 2. AX1800 raggiungibile in LAN
+  // 2. DNS — risolvi google.com
+  const dnsCheck = internet.up ? await checkDNS() : { up: false } as CheckResult;
+  if (internet.up && !dnsCheck.up) notes.push("DNS non risponde — risoluzione nomi KO");
+
+  // 3. AX1800 raggiungibile in LAN
   const ax1800IP = process.env.AX1800_IP || "192.168.1.10";
   const ax1800_lan = ping(ax1800IP);
-  if (!ax1800_lan) notes.push(`AX1800 non raggiungibile a ${ax1800IP}`);
+  if (!ax1800_lan.up) notes.push(`AX1800 non raggiungibile a ${ax1800IP}`);
 
-  // 3. VPN tunnel — controlla porta VPN sull'AX1800 (default WireGuard 51820 TCP fallback,
-  //    oppure OpenVPN 1194). Se il router espone una porta TCP per la VPN, questo la rileva.
-  //    In alternativa pinga l'interfaccia VPN (es. 10.0.0.1) se configurata.
+  // 4. VPN tunnel
   const vpnPort = Number(process.env.VPN_PORT) || 51820;
   const vpnInterfaceIP = process.env.VPN_INTERFACE_IP; // es. "10.0.0.1"
-  let vpn_tunnel = false;
-  if (ax1800_lan) {
-    // Prova prima la porta TCP
+  let vpn_tunnel: CheckResult = { up: false };
+  if (ax1800_lan.up) {
     vpn_tunnel = await checkPort(ax1800IP, vpnPort);
-    // Se non risponde su TCP, prova ping all'interfaccia VPN (se configurata)
-    if (!vpn_tunnel && vpnInterfaceIP) {
+    if (!vpn_tunnel.up && vpnInterfaceIP) {
       vpn_tunnel = ping(vpnInterfaceIP);
     }
-    // Fallback: se la porta non è TCP (es. WireGuard è solo UDP), consideriamo
-    // il servizio attivo se l'AX1800 risponde al ping E internet funziona
-    if (!vpn_tunnel && !vpnInterfaceIP) {
-      notes.push(`Porta VPN ${vpnPort}/tcp non risponde su ${ax1800IP} (normale se WireGuard UDP)`);
-      // Se hai un IP interfaccia VPN, impostalo con VPN_INTERFACE_IP per un check preciso
+    if (!vpn_tunnel.up && !vpnInterfaceIP) {
+      notes.push(`Porta VPN ${vpnPort}/tcp non risponde (normale se WireGuard UDP)`);
     }
   }
-  if (!vpn_tunnel && ax1800_lan) notes.push("Tunnel VPN non verificato — imposta VPN_INTERFACE_IP per check preciso");
+  if (!vpn_tunnel.up && ax1800_lan.up) {
+    notes.push("Tunnel VPN non verificato — imposta VPN_INTERFACE_IP per check preciso");
+  }
 
-  // 4. IP pubblico (solo se internet è OK)
-  const public_ip = internet ? await getPublicIP() : undefined;
-  if (internet && !public_ip) notes.push("Impossibile ottenere l'IP pubblico");
+  // 5. IP pubblico + change detection
+  const public_ip = internet.up ? await getPublicIP() : undefined;
+  if (internet.up && !public_ip) notes.push("Impossibile ottenere l'IP pubblico");
 
-  // 5. Tutto OK solo se tutti i check critici passano
-  const ok = internet && ax1800_lan && vpn_tunnel;
+  const previousIP = getPreviousIP(history);
+  const ip_changed = !!(public_ip && previousIP && public_ip !== previousIP);
+  if (ip_changed) notes.push(`IP pubblico cambiato: ${previousIP} → ${public_ip}`);
+
+  // 6. Risultato finale
+  const ok = internet.up && ax1800_lan.up && vpn_tunnel.up;
 
   const status: Status = {
     ts: new Date().toISOString(),
     ok,
-    checks: { internet, ax1800_lan, vpn_tunnel, public_ip },
+    checks: {
+      internet,
+      dns: dnsCheck,
+      ax1800_lan,
+      vpn_tunnel,
+      public_ip,
+      ip_changed,
+    },
     notes: notes.length > 0 ? notes : undefined,
   };
 
-  // Scrivi status.json nella cartella docs/ (così GitHub Pages lo serve)
-  const outDir = path.join(__dirname, "..", "docs");
-  if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-  const outPath = path.join(outDir, "status.json");
+  // Scrivi status.json
+  const statusPath = path.join(outDir, "status.json");
+  fs.writeFileSync(statusPath, JSON.stringify(status, null, 2), "utf-8");
 
-  fs.writeFileSync(outPath, JSON.stringify(status, null, 2), "utf-8");
-  console.log(`[${status.ts}] status.json → ${status.ok ? "OK ✅" : "KO ❌"}`);
+  // Aggiorna storico (max 20 entries, più recente in cima)
+  history.entries.unshift(status);
+  if (history.entries.length > MAX_HISTORY) {
+    history.entries = history.entries.slice(0, MAX_HISTORY);
+  }
+  saveHistory(historyPath, history);
+
+  console.log(`[${status.ts}] status.json → ${ok ? "OK ✅" : "KO ❌"}`);
+  if (internet.latency_ms) console.log(`  Internet: ${internet.latency_ms}ms`);
+  if (ax1800_lan.latency_ms) console.log(`  AX1800:   ${ax1800_lan.latency_ms}ms`);
+  if (ip_changed) console.log(`  ⚠ IP cambiato: ${previousIP} → ${public_ip}`);
   if (notes.length) console.log("  Note:", notes.join("; "));
 }
 

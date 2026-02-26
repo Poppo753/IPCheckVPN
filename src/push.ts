@@ -15,7 +15,7 @@ function main(): void {
     execSync(cmd, { cwd: root, stdio: "inherit" });
 
   try {
-    run("git add docs/status.json");
+    run("git add docs/status.json docs/history.json");
     run('git diff --cached --quiet || git commit -m "status update"');
     run("git push");
     console.log("Push completato ✅");
