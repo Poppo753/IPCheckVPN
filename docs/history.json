@@ -1,6 +1,50 @@
 {
   "entries": [
     {
+      "ts": "2026-02-26T13:08:43.580Z",
+      "ok": false,
+      "checks": {
+        "internet": {
+          "up": true,
+          "latency_ms": 32
+        },
+        "dns": {
+          "up": true,
+          "latency_ms": 1
+        },
+        "ax1800_lan": {
+          "up": false
+        },
+        "vpn_tunnel": {
+          "up": false
+        },
+        "gateway": {
+          "ip": "192.168.1.1",
+          "is_vpn_router": false
+        },
+        "network_interface": {
+          "name": "Ethernet",
+          "type": "Ethernet",
+          "speed_mbps": 1000
+        },
+        "vpn_adapter": {
+          "name": "NordLynx",
+          "description": "NordLynx Tunnel"
+        },
+        "public_ip": "130.25.103.177",
+        "ip_changed": false
+      },
+      "meta": {
+        "uptime_pct": 0,
+        "last_down": "2026-02-26T13:08:00.713Z",
+        "total_checks": 20
+      },
+      "notes": [
+        "AX1800 non raggiungibile a 192.168.1.10",
+        "Gateway = 192.168.1.1 (Vodafone Station) — NON stai passando dalla VPN!"
+      ]
+    },
+    {
       "ts": "2026-02-26T13:08:00.713Z",
       "ok": false,
       "checks": {
