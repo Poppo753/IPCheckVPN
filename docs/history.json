@@ -1,6 +1,50 @@
 {
   "entries": [
     {
+      "ts": "2026-02-27T07:18:40.881Z",
+      "ok": false,
+      "checks": {
+        "internet": {
+          "up": true,
+          "latency_ms": 30
+        },
+        "dns": {
+          "up": true,
+          "latency_ms": 7
+        },
+        "ax1800_lan": {
+          "up": false
+        },
+        "vpn_tunnel": {
+          "up": false
+        },
+        "gateway": {
+          "ip": "192.168.8.1",
+          "is_vpn_router": false
+        },
+        "network_interface": {
+          "name": "Ethernet",
+          "type": "Ethernet",
+          "speed_mbps": 1000
+        },
+        "vpn_adapter": {
+          "name": "NordLynx",
+          "description": "NordLynx Tunnel"
+        },
+        "public_ip": "130.25.103.177",
+        "ip_changed": false
+      },
+      "meta": {
+        "uptime_pct": 0,
+        "last_down": "2026-02-27T07:13:40.890Z",
+        "total_checks": 21
+      },
+      "notes": [
+        "AX1800 non raggiungibile a 192.168.1.10",
+        "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
+      ]
+    },
+    {
       "ts": "2026-02-27T07:13:40.890Z",
       "ok": false,
       "checks": {
@@ -836,52 +880,6 @@
       "meta": {
         "uptime_pct": 0,
         "last_down": "2026-02-27T05:38:40.802Z",
-        "total_checks": 21
-      },
-      "notes": [
-        "Porta VPN 51820/tcp non risponde (normale se WireGuard UDP)",
-        "Tunnel VPN non verificato — imposta VPN_INTERFACE_IP per check preciso",
-        "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
-      ]
-    },
-    {
-      "ts": "2026-02-27T05:38:40.802Z",
-      "ok": false,
-      "checks": {
-        "internet": {
-          "up": true,
-          "latency_ms": 33
-        },
-        "dns": {
-          "up": true,
-          "latency_ms": 7
-        },
-        "ax1800_lan": {
-          "up": true,
-          "latency_ms": 29
-        },
-        "vpn_tunnel": {
-          "up": false
-        },
-        "gateway": {
-          "ip": "192.168.8.1",
-          "is_vpn_router": false
-        },
-        "network_interface": {
-          "name": "Wi-Fi",
-          "type": "WiFi",
-          "speed_mbps": 2400
-        },
-        "vpn_adapter": {
-          "name": "NordLynx",
-          "description": "NordLynx Tunnel"
-        },
-        "public_ip": "130.25.103.177",
-        "ip_changed": false
-      },
-      "meta": {
-        "uptime_pct": 0,
-        "last_down": "2026-02-27T05:33:40.802Z",
         "total_checks": 21
       },
       "notes": [
