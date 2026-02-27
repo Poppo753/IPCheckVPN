@@ -1,18 +1,18 @@
 {
-  "ts": "2026-02-27T00:48:40.375Z",
+  "ts": "2026-02-27T00:53:40.429Z",
   "ok": false,
   "checks": {
     "internet": {
       "up": true,
-      "latency_ms": 32
+      "latency_ms": 36
     },
     "dns": {
       "up": true,
-      "latency_ms": 8
+      "latency_ms": 7
     },
     "ax1800_lan": {
       "up": true,
-      "latency_ms": 31
+      "latency_ms": 30
     },
     "vpn_tunnel": {
       "up": false
@@ -35,7 +35,7 @@
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-02-27T00:43:40.369Z",
+    "last_down": "2026-02-27T00:48:40.375Z",
     "total_checks": 21
   },
   "notes": [
