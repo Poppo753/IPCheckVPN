@@ -1,14 +1,14 @@
 {
-  "ts": "2026-02-27T11:58:39.909Z",
+  "ts": "2026-02-27T12:03:40.081Z",
   "ok": false,
   "checks": {
     "internet": {
       "up": true,
-      "latency_ms": 31
+      "latency_ms": 29
     },
     "dns": {
       "up": true,
-      "latency_ms": 7
+      "latency_ms": 10
     },
     "ax1800_lan": {
       "up": false
@@ -34,7 +34,7 @@
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-02-27T11:53:39.872Z",
+    "last_down": "2026-02-27T11:58:39.909Z",
     "total_checks": 21
   },
   "notes": [
