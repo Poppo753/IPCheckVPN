@@ -1,14 +1,14 @@
 {
-  "ts": "2026-03-02T20:38:40.542Z",
+  "ts": "2026-03-02T20:43:41.074Z",
   "ok": false,
   "checks": {
     "internet": {
       "up": true,
-      "latency_ms": 36
+      "latency_ms": 32
     },
     "dns": {
       "up": true,
-      "latency_ms": 7
+      "latency_ms": 15
     },
     "ax1800_lan": {
       "up": false
@@ -30,16 +30,15 @@
       "description": "NordLynx Tunnel"
     },
     "public_ip": "188.216.18.198",
-    "ip_changed": true
+    "ip_changed": false
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-03-02T20:33:40.556Z",
+    "last_down": "2026-03-02T20:38:40.542Z",
     "total_checks": 21
   },
   "notes": [
     "AX1800 non raggiungibile a 192.168.1.10",
-    "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete",
-    "IP pubblico cambiato: 130.25.103.177 → 188.216.18.198"
+    "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
   ]
 }
