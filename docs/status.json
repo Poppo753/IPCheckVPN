@@ -1,5 +1,5 @@
 {
-  "ts": "2026-03-02T01:28:40.341Z",
+  "ts": "2026-03-02T01:33:40.378Z",
   "ok": false,
   "checks": {
     "internet": {
@@ -12,7 +12,7 @@
     },
     "ax1800_lan": {
       "up": true,
-      "latency_ms": 34
+      "latency_ms": 33
     },
     "vpn_tunnel": {
       "up": false
@@ -35,7 +35,7 @@
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-03-02T01:23:40.347Z",
+    "last_down": "2026-03-02T01:28:40.341Z",
     "total_checks": 21
   },
   "notes": [
