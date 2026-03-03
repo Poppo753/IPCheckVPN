@@ -1,18 +1,17 @@
 {
-  "ts": "2026-03-03T05:58:43.954Z",
+  "ts": "2026-03-03T06:03:40.561Z",
   "ok": false,
   "checks": {
     "internet": {
       "up": true,
-      "latency_ms": 141
+      "latency_ms": 30
     },
     "dns": {
       "up": true,
-      "latency_ms": 2855
+      "latency_ms": 7
     },
     "ax1800_lan": {
-      "up": true,
-      "latency_ms": 31
+      "up": false
     },
     "vpn_tunnel": {
       "up": false
@@ -22,9 +21,9 @@
       "is_vpn_router": false
     },
     "network_interface": {
-      "name": "Wi-Fi",
-      "type": "WiFi",
-      "speed_mbps": 2400
+      "name": "Ethernet",
+      "type": "Ethernet",
+      "speed_mbps": 1000
     },
     "vpn_adapter": {
       "name": "NordLynx",
@@ -35,12 +34,11 @@
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-03-03T05:53:43.852Z",
+    "last_down": "2026-03-03T05:58:43.954Z",
     "total_checks": 21
   },
   "notes": [
-    "Porta VPN 51820/tcp non risponde (normale se WireGuard UDP)",
-    "Tunnel VPN non verificato — imposta VPN_INTERFACE_IP per check preciso",
+    "AX1800 non raggiungibile a 192.168.1.10",
     "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
   ]
 }
