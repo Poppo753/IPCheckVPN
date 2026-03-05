@@ -1,10 +1,10 @@
 {
-  "ts": "2026-03-05T22:53:40.626Z",
+  "ts": "2026-03-05T22:58:41.323Z",
   "ok": false,
   "checks": {
     "internet": {
       "up": true,
-      "latency_ms": 36
+      "latency_ms": 65
     },
     "dns": {
       "up": true,
@@ -34,7 +34,7 @@
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-03-05T22:48:40.615Z",
+    "last_down": "2026-03-05T22:53:40.626Z",
     "total_checks": 21
   },
   "notes": [
