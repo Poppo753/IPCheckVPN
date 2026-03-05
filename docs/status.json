@@ -1,14 +1,14 @@
 {
-  "ts": "2026-03-05T19:43:40.120Z",
+  "ts": "2026-03-05T19:48:55.000Z",
   "ok": false,
   "checks": {
     "internet": {
       "up": true,
-      "latency_ms": 30
+      "latency_ms": 544
     },
     "dns": {
       "up": true,
-      "latency_ms": 7
+      "latency_ms": 11
     },
     "ax1800_lan": {
       "up": false
@@ -17,28 +17,19 @@
       "up": false
     },
     "gateway": {
-      "ip": "192.168.8.1",
+      "ip": "sconosciuto",
       "is_vpn_router": false
-    },
-    "network_interface": {
-      "name": "Ethernet",
-      "type": "Ethernet",
-      "speed_mbps": 1000
-    },
-    "vpn_adapter": {
-      "name": "NordLynx",
-      "description": "NordLynx Tunnel"
     },
     "public_ip": "188.216.18.198",
     "ip_changed": false
   },
   "meta": {
     "uptime_pct": 0,
-    "last_down": "2026-03-05T19:38:40.182Z",
+    "last_down": "2026-03-05T19:43:40.120Z",
     "total_checks": 21
   },
   "notes": [
     "AX1800 non raggiungibile a 192.168.1.10",
-    "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
+    "Impossibile rilevare il default gateway"
   ]
 }
