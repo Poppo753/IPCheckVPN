@@ -1,6 +1,50 @@
 {
   "entries": [
     {
+      "ts": "2026-03-06T14:48:40.084Z",
+      "ok": false,
+      "checks": {
+        "internet": {
+          "up": true,
+          "latency_ms": 32
+        },
+        "dns": {
+          "up": true,
+          "latency_ms": 8
+        },
+        "ax1800_lan": {
+          "up": false
+        },
+        "vpn_tunnel": {
+          "up": false
+        },
+        "gateway": {
+          "ip": "192.168.8.1",
+          "is_vpn_router": false
+        },
+        "network_interface": {
+          "name": "Ethernet",
+          "type": "Ethernet",
+          "speed_mbps": 1000
+        },
+        "vpn_adapter": {
+          "name": "NordLynx",
+          "description": "NordLynx Tunnel"
+        },
+        "public_ip": "188.216.18.198",
+        "ip_changed": false
+      },
+      "meta": {
+        "uptime_pct": 0,
+        "last_down": "2026-03-06T14:43:40.119Z",
+        "total_checks": 21
+      },
+      "notes": [
+        "AX1800 non raggiungibile a 192.168.1.10",
+        "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
+      ]
+    },
+    {
       "ts": "2026-03-06T14:43:40.119Z",
       "ok": false,
       "checks": {
@@ -827,50 +871,6 @@
       "meta": {
         "uptime_pct": 0,
         "last_down": "2026-03-06T13:08:40.616Z",
-        "total_checks": 21
-      },
-      "notes": [
-        "AX1800 non raggiungibile a 192.168.1.10",
-        "Gateway = 192.168.8.1 — non è né Vodafone né AX1800, controlla la rete"
-      ]
-    },
-    {
-      "ts": "2026-03-06T13:08:40.616Z",
-      "ok": false,
-      "checks": {
-        "internet": {
-          "up": true,
-          "latency_ms": 34
-        },
-        "dns": {
-          "up": true,
-          "latency_ms": 8
-        },
-        "ax1800_lan": {
-          "up": false
-        },
-        "vpn_tunnel": {
-          "up": false
-        },
-        "gateway": {
-          "ip": "192.168.8.1",
-          "is_vpn_router": false
-        },
-        "network_interface": {
-          "name": "Ethernet",
-          "type": "Ethernet",
-          "speed_mbps": 1000
-        },
-        "vpn_adapter": {
-          "name": "NordLynx",
-          "description": "NordLynx Tunnel"
-        },
-        "public_ip": "188.216.18.198",
-        "ip_changed": false
-      },
-      "meta": {
-        "uptime_pct": 0,
-        "last_down": "2026-03-06T13:03:42.719Z",
         "total_checks": 21
       },
       "notes": [
